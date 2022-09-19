@@ -1,0 +1,78 @@
+#+title: PROG-220: C++ I
+#+author: karl statz
+#+email: kstatz@colum.edu
+* Notes
+** Basic C Program
+C Programs all start with a main method that returns an integer status
+#+BEGIN_SRC c
+int main(int argc, char **argv)
+{
+    return 0;
+}
+#+END_SRC
+
+Breaking this down we have a function signature: a function called `main` that returns a value of type `int`.
+As a note c does not support function overloading so only one function can be called main in your program, no matter if you have a `main` function with a different number/typed arguments. As a note, the return type of a function is not part of the function singature, how we would describe this function using arity notation is main/2. which is a function called main that takes 2 arguments. In this case we have a integer called argc for how many command line args were passed in when the program was invoked and argv the "string" (more on this later) values of each arg. As a note every program has at least one arg at position 0 which is the name of the program.
+
+Return 0 is used to signal to the operating system if your program succeeded or not. This is optiona in c but good practice for the future to always include it
+** Types and Control Structures
+c, out of the box, supports relatively few data types.
+*** Integral Types
+| type           | size         | range                                                |
+|----------------+--------------+------------------------------------------------------|
+| char           | 1 byte       | -128 to 127 or 0 to 255                              |
+| unsigned char  | 1 byte       | 0 to 255                                             |
+| signed char    | 1 byte       | -128 to 127                                          |
+| int            | 2 or 4 bytes | -32,768 to 32,767 or -2,147,483,648 to 2,147,483,647 |
+| unsigned int   | 2 or 4 bytes | 0 to 65,535 or 0 to 4,294,967,295                    |
+| short          | 2 bytes      | -32,768 to 32,767                                    |
+| unsigned short | 2 bytes      | 0 to 65,535                                          |
+| long           | 4 or 8 bytes | -9223372036854775808 to 9223372036854775807          |
+| unsigned long  | 4 or 8 bytes | 0 to 18446744073709551615                            |
+*** decimal types
+| type        | size     | range                  | precision         |
+|-------------+----------+------------------------+-------------------|
+| float       | 4 bytes  | 1.2E-38 to 3.4E+38     | 6 decimal places  |
+| double      | 8 bytes  | 2.3E-308 to 1.7E+308   | 15 decimal places |
+| long double | 10 bytes | 3.4E-4932 to 1.1E+4932 | 19 decimal places |
+** IO Basics
+*** printf
+**** printf cheat sheet
+| arg   | type                                    |      example |
+|-------+-----------------------------------------+--------------|
+| %d/%i | signed decimal integer                  |          438 |
+| %u    | unsigned decimal integer                |        23423 |
+| %o    | unsigned octal                          |          625 |
+| %x    | unsigned hexadecimal integer            |          7fa |
+| %X    | unsigned hexadecimal integer, uppercase |          7FA |
+| %f    | decimal floating point, lowercase       |       385.56 |
+| %F    | decimal floating point, uppercase       |      3583.53 |
+| %e    | scientific notation, lowercase          |     3.834e+2 |
+| %E    | scientific notation, uppercase          |   3.38432e+2 |
+| %g    | use shortest notation (e/f)             |       234.54 |
+| %G    | use shorest notation (E/F)              |      2342.24 |
+| %a    | hexadecimal floating point, lowercase   | -0xc.90fep-2 |
+| %A    | hexadecimal floating point, uppercase   | -0xc.90FEP-2 |
+| %c    | single character                        |            z |
+| %s    | string of characters                    |  hello world |
+| %p    | pointer address                         |      b800000 |
+| %n    | nothing                                 |              |
+| %%    | prints a literal %                      |            % |
+
+[[https://cplusplus.com/reference/cstdio/printf/][documentation]]
+**** Examples
+#+BEGIN_SRC c
+printf("%d", 10);
+printf("%s", "Hello World");
+#+END_SRC
+** Pointers
+Pointers are a fundamental part of c programming. They represent a reference to a value. Much like your postal address "points" to your house where you store your belongings a pointer points to a memory address that holds the value for the variable you are referencing
+*** Basic Examples
+#+BEGIN_SRC c
+int x = 10; // declare x as 10
+int *x_ptr = &x; //get the location of x and store it in the pointer x_ptr
+#+END_SRC
+*** dereferencing
+#+BEGIN_SRC c
+
+#+END_SRC

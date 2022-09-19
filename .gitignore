@@ -1,0 +1,6 @@
+*.out
+*.o
+*.s
+build/
+*.pdf
+*.md
