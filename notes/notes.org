@@ -73,6 +73,9 @@ int x = 10; // declare x as 10
 int *x_ptr = &x; //get the location of x and store it in the pointer x_ptr
 #+END_SRC
 *** dereferencing
+dereferencing is a simple operation but it is, in my opinion, poorly named and ergonomically hard to reason about until you get used to it
 #+BEGIN_SRC c
-
+int *x_ptr; //declaring a pointer
+int y = *x_ptr; //preceding a variable name with a '*' gets the value of the variable from the location of the pointer
 #+END_SRC
+** Functions
