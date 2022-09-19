@@ -79,3 +79,121 @@ int *x_ptr; //declaring a pointer
 int y = *x_ptr; //preceding a variable name with a '*' gets the value of the variable from the location of the pointer
 #+END_SRC
 ** Functions
+functions in c make up 3 parts: return type, signature and body. c does not support function overloading so function names can be treated as unique
+#+BEGIN_SRC c
+void foo();//a function prototype that can take any number of arguments
+void foo(void); //a function prototype that takes void arguments (none)
+int add(int x, int y); //a function that takes 2 integer arguments and returns an integer
+#+END_SRC
+*** Function Prototyping
+c files are compiled top top bottom so you must declare a function before it is used. otherwise it is known as implicitly declaring a function and leads to compile errors. The two strategies are to either declare, and implement your functions at the top of the file before they are used or to prototype the functions at the top and then implement them lower where it makes sense leaving `main` as your top level function.
+
+#+BEGIN_SRC c
+int add(int x, int y)
+{
+    return x + y;
+}
+
+int main(int argc, char **argv)
+{
+    int y = add(1, 2);
+    printf("%d", y);
+}
+#+END_SRC
+
+#+BEGIN_SRC c
+int add(int, int);
+
+int main(int argc, char **argv)
+{
+    int y = add(1, 2);
+    printf("%d", y);
+}
+
+int add(int x, int y)
+{
+    return x + y;
+}
+#+END_SRC
+
+either of these approaches works fine it just depends on how you want to structure your program. I personally prefer to prototype functions at the top and then implement later. This helps me transition to header files easier when a project needs to be broken into multiple files
+*** const arguments
+modern c compilers are usually pretty good at generating correct instructions from c code but sometimes they need a little help. `const` is the keyword we use when we are passing immutable arguments to a function. Immutable means that they cannot be mutated, aka changed, by the function. Our `add/2` function from before is a perfect candidate for `const` arguments since it does not change either argument's value since it returns a new variable.
+
+#+BEGIN_SRC c
+int add(const int x, const int y)
+{
+    return x + y;
+}
+#+END_SRC
+
+Many years ago this was a necessary compiler optimization since it could generate more efficient instructions knowing that x and y cannot be changed. Now compilers are smart enough to analyze the code and understand that these can be const and mark them as such anyway.
+
+there are a few different uses of const that are useful to know. Constant variables do not change, constant pointers cant be changed to point somewhere else and constant pointers to constant variables cannot have their value changed nor can they point somewhere else
+#+BEGIN_SRC c
+const int i = 10;
+i = 11; //throws an error since i is const
+
+const int *ptr;
+const int *ptr;
+ptr = ptr2;//compiler error because we are reassinging the address of ptr to the address of ptr2
+#+END_SRC
+*** reference vs value arguments
+passing by reference vs by value is something we do all the time in higher level languages without realizing it. C uses pointers to accomplish this
+
+#+BEGIN_SRC c
+void foo(int x)
+{
+   x += 10;
+}
+
+void foo2(int *x_ptr)
+{
+    *x_ptr += 10;
+}
+
+int x = 10;
+foo(x);
+printf("%d", x); // prints 10
+
+foo2(&x);
+printf("%d", x); // prints 20
+#+END_SRC
+
+`foo/1` uses the technique known as passing by value. This means x is passed to the function, a copy of it is made for that function to operate on, then the copy is destroyed when `foo/1` exits. So any modifications done to x are done on the copy of x, not the original. Contrast this with `foo2/1` where we pass it in by pointer any modification done to x_ptr affect the original since we are using the same instance and just dereferencing its pointer.
+** structs
+structs are a way for programmers to define their own data structures in c. They are a great way to model the data for a concept and use it as a whole.
+
+#+BEGIN_SRC c
+struct Point {
+    int x;
+    int y;
+};
+
+struct Point p = { .x = 10, .y = 10 };
+#+END_SRC
+
+defining a struct with 2 fields x and y to model a point in space with x and y representing the vertices of a graph. Initializing a struct using the `.x = 10` syntax is relatively new and should work in any modern c compiler (glares at microsoft). Notably you have to prefix defining a struct variable with the word struct. If you find this as annoying as I do, you can define your own type for that struct using the `typedef` keyword.
+
+#+BEGIN_SRC c
+typedef struct {
+    int x;
+    int y;
+} Point;
+
+Point p = { .x = 10, .y = 10 };
+#+END_SRC
+
+I find this more ergonomical for defining structs. The sharp edge here is you have a recursive struct (a struct that references itself)
+
+#+BEGIN_SRC c
+typedef struct Point {
+    int x;
+    int y;
+    Point *p;
+} Point_t
+
+Point_t p = { .x = 10, .y = 10 };
+#+END_SRC
+
+here we have to define a struct called point that is aliased as the type Point_t.
