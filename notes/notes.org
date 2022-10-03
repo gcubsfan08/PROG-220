@@ -11,8 +11,7 @@ int main(int argc, char **argv)
 }
 #+END_SRC
 
-Breaking this down we have a function signature: a function called `main` that returns a value of type `int`.
-As a note c does not support function overloading so only one function can be called main in your program, no matter if you have a `main` function with a different number/typed arguments. As a note, the return type of a function is not part of the function singature, how we would describe this function using arity notation is main/2. which is a function called main that takes 2 arguments. In this case we have a integer called argc for how many command line args were passed in when the program was invoked and argv the "string" (more on this later) values of each arg. As a note every program has at least one arg at position 0 which is the name of the program.
+Breaking this down we have a function signature: a function called `main` that returns a value of type `int`. C does not support function overloading so only one function can be called main in your program, no matter if you have a `main` function with a different number/typed arguments. The return type of a function is not part of the function singature, how we would describe this function using arity notation is main/2. which is a function called main that takes 2 arguments. In this case we have a integer called argc for how many command line args were passed in when the program was invoked and argv the "string" (more on this later) values of each arg. Every program has at least one arg at position 0 which is the name of the program.
 
 Return 0 is used to signal to the operating system if your program succeeded or not. This is optiona in c but good practice for the future to always include it
 ** Types and Control Structures
@@ -197,3 +196,62 @@ Point_t p = { .x = 10, .y = 10 };
 #+END_SRC
 
 here we have to define a struct called point that is aliased as the type Point_t.
+** Memory management
+All memory management in the standard c library exist in the `stdlib` header. C is a memory unsafe language, which means that when we allocate memory, the programmer and not the system are in charge of making sure it is properly managed. Whenever we ask the operating system for memory to store a variable we are in charge of making sure we clean up after ourselves as c programmers. this is directly orthoganal to c#/java where we have a garbage collector that cleans up memory that is no longer used by our program for us. Using manual memory management gives programmers greater control over their memory usage and _can_ lead to smaller, more efficient programs with more predictable runtime behavior since the programmer is entirely in control over the memory model of their program.
+
+*** Heap Memory
+Up until this point we have only dealt with stack memory. A good rule of remembering if you are dealing with stack memory of heap memory is that stack memory is local to the function that declared it.
+#+BEGIN_SRC c
+void foo()
+{
+    int i;
+    i++;
+}
+#+END_SRC
+
+this is a quick example of stack memory. i is declared in the function foo, we do something with i, then when the function returns (void functions have an implicit return since they return no value) that memory is cleared in reverse order. This is usually simple and has a very low probability of being used incorrectly. The exception to this is if you have a pointer to stack memory.
+
+#+BEGIN_SRC c
+int * foo()
+{
+    int x = 10;
+    return %x;
+}
+#+END_SRC
+This simple example shows undefined behavior since x is cleaned up when the function returns, it cannot be used validly by any downstream code. If you have a pointer to a stack allocated variable you cannot return it from the function. Heap memory exists to solve the problem of a variable needing to live via reference longer than the function that declared it. Allocating heap memory is a tad more involved than just declaring a variable.
+
+#+BEGIN_SRC c
+int *foo()
+{
+    int * i_ptr = (int*)malloc(sizeof(int) * 10);
+    return i_ptr;
+}
+#+END_SRC
+
+Lets break down the signature of malloc. As per its man page malloc takes in a size_t and returns a void*. Void* are just pointers that point to a block of memory but do not denote the type. They must be cast to a typed pointer (int*, char* etc) before they can be dereferenced. So we tell malloc we need memory the size of an integer (either 2 or 4 bytes depending on if you are on a 64 bit or 32 bit operating system) and then we cast the return type to an int* so it can be used. The multiply by 10 gives us an array of 10 elements.
+
+Malloc, depending on the implementation can fail and it will either return NULL or 0. But if we read the malloc implemenation notes from [[https://linux.die.net/man/3/malloc][glibc]]
+#+BEGIN_QUOTE
+By default, Linux follows an optimistic memory allocation strategy. This means that when malloc() returns non-NULL there is no guarantee that the memory really is available. In case it turns out that the system is out of memory, one or more processes will be killed by the OOM killer. For more information, see the description of /proc/sys/vm/overcommit_memory and /proc/sys/vm/oom_adj in proc(5), and the Linux kernel source file Documentation/vm/overcommit-accounting.
+#+END_QUOTE
+
+So on linux kernel Malloc will return a pointer that may not be valid and it is up to the userspace program to figure out what to do when memory is invalid instead of throwing a NULL back to the calling process. Remember the first rule of unsafe programming is to have fun and be yourself.
+
+Notably when we get memory back from the operating system it is as is so we cannot trust it to contain 0 values or sensible defaults for our datatype so all memory returned from malloc must be treated as uninitialized. If you need clean memory from an allocation you must use `calloc`.
+
+#+BEGIN_SRC c
+int *foo()
+{
+   return (int*)calloc(10, sizeof(int));
+}
+#+END_SRC
+Calloc returns zeroed out memory. Its signature is slightly different from malloc where it takes in nmembers as the first argument instead of making you do the multiplication yourself. Why are they different? Literally no idea. Cruelty i suppose. The reason we dont always use calloc every time is because it has a cost overhead of zeroing out memory that can be high in large allocations.
+
+
+When we have memory given to us by the operating system we also have to tell the operating system when we are done with it
+
+#+BEGIN_SRC c
+int *x_ptr = foo();
+// do something with x
+free(x_ptr);
+#+END_SRC
