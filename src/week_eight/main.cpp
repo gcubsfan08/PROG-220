@@ -80,15 +80,14 @@ struct HasAge
 
 
 
-struct Dog {
-    int age;
+struct Dog : public CanMakeNoise, HasAge {
     void MakeNoise()
     {
         std::cout << "Bark" << std::endl;
     }
 };
 
-struct SuperDog : public Dog {
+struct SuperDog : public Dog, CanShootLazerBeams {
     void LaserBeams()
     {
        std::cout << "Pew Pew" << std::endl;
@@ -96,9 +95,9 @@ struct SuperDog : public Dog {
 };
 
 
-void FooDog(Dog *d)
+void HandleNoiseMaker(CanMakeNoise *h)
 {
-    d->MakeNoise();
+    h->MakeNoise();
 }
 
 
