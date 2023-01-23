@@ -1,3 +1,4 @@
+
 #+title: PROG-220: C++ I
 #+author: karl statz
 #+email: kstatz@colum.edu
@@ -255,3 +256,26 @@ int *x_ptr = foo();
 // do something with x
 free(x_ptr);
 #+END_SRC
+
+The trick with manual memory management is knowing when it is safe to free something from the heap. The only real answer is when there are no more valid references to that data it is safe to be freed. How do you know there are no valid refernces to the pointer? There are no built in language semantics for that, but there is a lot of tooling. There are no language built in protections for freeing memory too early, not freeing it at all or freeing it twice.
+
+#+BEGIN_SRC c
+void foo(int *x)
+{
+    free(x);
+}
+int *x_ptr = (int*)malloc(sizeof(int));
+
+foo(x_ptr);
+
+(*x_ptr) + 100 // use after free
+free(x_ptr); //double free
+#+END_SRC
+
+Luckily the GNU C Compiler supports flags to let us know when we have these situations.
+
+#+BEGIN_SRC sh
+gcc main.c -fsanitize=address
+#+END_SRC
+
+this compiler flag will detect memory errors but be warned it can change program execution and destroy performace when enabled so it should never be enabled for production builds. It is much better to use a tool like valgrid [[https://valgrind.org/][valgrind]]
