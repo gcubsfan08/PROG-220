@@ -3,7 +3,6 @@
 *.s
 build/
 *.pdf
-*.md
 app
 tmp/
 .ccls-cache/
